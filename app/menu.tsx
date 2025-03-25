@@ -9,15 +9,22 @@ interface MenuProps {
 const Menu: React.FC<MenuProps> = ({ slideAnim, onMenuSelect }) => {
   return (
     <Animated.View style={{ position: "absolute", top: 0, left: slideAnim, width: 250, height: "100%", backgroundColor: "#f7f7f7", flexDirection: "column" }}>
-      <View style={{ width: "100%", height: 4, backgroundColor: "#cdcfd2" }} />
-        <TouchableOpacity onPress={() => onMenuSelect("attendance")}>
-            <Text style={menuStyles.title}>Attendance</Text>
+        <View style={{ width: "100%", height: 4, backgroundColor: "#cdcfd2" }}/>
+
+        <TouchableOpacity onPress={() => onMenuSelect("arriving")}>
+            <Text style={menuStyles.title}>Arriving</Text>
         </TouchableOpacity>
 
         <View style={menuStyles.dividerLine}/>
 
         <TouchableOpacity onPress={() => onMenuSelect("boatLineups")}>
             <Text style={menuStyles.title}>Boat Lineups</Text>
+        </TouchableOpacity>
+
+        <View style={menuStyles.dividerLine}/>
+
+        <TouchableOpacity onPress={() => onMenuSelect("departing")}>
+            <Text style={menuStyles.title}>Departing</Text>
         </TouchableOpacity>
 
         <View style={menuStyles.dividerLine}/>

@@ -2,13 +2,13 @@ import { Text, TouchableOpacity, View, Animated } from "react-native";
 import { useNavigation } from "expo-router";
 import { useEffect, useState } from "react";
 import Menu from "./menu";
-import Attendance from "./attendance";
+import Arriving from "./arriving";
 
 export default function Index() {
   const navigation = useNavigation();
 
   const [menuVisible, setMenuVisible] = useState(false);
-  const [selectedMenuItem, setSelectedMenuItem] = useState<string>("attendance");
+  const [selectedMenuItem, setSelectedMenuItem] = useState<string>("arriving");
   const menuSlide = useState(new Animated.Value(-250))[0];
 
   useEffect(() => {
@@ -36,10 +36,12 @@ export default function Index() {
 
   const renderContent = () => {
     switch (selectedMenuItem) {
-      case "attendance":
-        return <Attendance />;
+      case "arriving":
+        return <Arriving />;
       case "boatLineups":
         return <Text>Boat Lineups Content</Text>;
+      case "departing":
+        return <Text>Departing Content</Text>;
       default:
         return <Text>Select an option from the menu.</Text>;
     }
