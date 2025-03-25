@@ -3,19 +3,20 @@ import { View, Text, Animated, StyleSheet, TouchableOpacity } from "react-native
 
 interface MenuProps {
   slideAnim: Animated.Value;
+  onMenuSelect: (menuItem: string) => void;
 }
 
-const Menu: React.FC<MenuProps> = ({ slideAnim }) => {
+const Menu: React.FC<MenuProps> = ({ slideAnim, onMenuSelect }) => {
   return (
     <Animated.View style={{ position: "absolute", top: 0, left: slideAnim, width: 250, height: "100%", backgroundColor: "#f7f7f7", flexDirection: "column" }}>
       <View style={{ width: "100%", height: 4, backgroundColor: "#cdcfd2" }} />
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => onMenuSelect("attendance")}>
             <Text style={menuStyles.title}>Attendance</Text>
         </TouchableOpacity>
 
         <View style={menuStyles.dividerLine}/>
 
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => onMenuSelect("boatLineups")}>
             <Text style={menuStyles.title}>Boat Lineups</Text>
         </TouchableOpacity>
 

@@ -2,11 +2,13 @@ import { Text, TouchableOpacity, View, Animated } from "react-native";
 import { useNavigation } from "expo-router";
 import { useEffect, useState } from "react";
 import Menu from "./menu";
+import Attendance from "./attendance";
 
 export default function Index() {
   const navigation = useNavigation();
 
   const [menuVisible, setMenuVisible] = useState(false);
+  const [selectedMenuItem, setSelectedMenuItem] = useState<string>("attendance");
   const menuSlide = useState(new Animated.Value(-250))[0];
 
   useEffect(() => {
@@ -22,6 +24,27 @@ export default function Index() {
     }).start();
   }
 
+  const handleMenuSelect = (menuItem: string) => {
+    setSelectedMenuItem(menuItem);  
+    setMenuVisible(false);  
+    Animated.timing(menuSlide, { 
+      toValue: -250, 
+      duration: 300,                   
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const renderContent = () => {
+    switch (selectedMenuItem) {
+      case "attendance":
+        return <Attendance />;
+      case "boatLineups":
+        return <Text>Boat Lineups Content</Text>;
+      default:
+        return <Text>Select an option from the menu.</Text>;
+    }
+  };
+
   return (
     <View style={{ flex: 1}}>
       <View style={{ width: "100%", height: 60, backgroundColor: "#782F40", flexDirection: "row", alignItems: "center" }}> 
@@ -35,7 +58,8 @@ export default function Index() {
       </View>
 
       <View style={{ flex: 1, backgroundColor: "#eeeeef", justifyContent: "center", alignItems: "center" }}>
-        <Menu slideAnim={menuSlide} />
+        {renderContent()}
+        <Menu slideAnim={menuSlide} onMenuSelect={handleMenuSelect} />
       </View>
     </View>
   );
