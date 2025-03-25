@@ -3,6 +3,7 @@ import { useNavigation } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import Menu from "./menu";
 import Arriving from "./arriving";
+import Export from "./export";
 
 export default function Index() {
   const navigation = useNavigation();
@@ -42,6 +43,8 @@ export default function Index() {
         return <Text>Boat Lineups Content</Text>;
       case "departing":
         return <Text>Departing Content</Text>;
+      case "export":
+        return <Export />
       default:
         return <Text>Select an option from the menu.</Text>;
     }

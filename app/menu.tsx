@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Animated, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, Animated, StyleSheet, TouchableOpacity, StatusBar } from "react-native";
 
 interface MenuProps {
   slideAnim: Animated.Value;
@@ -21,6 +21,7 @@ const Menu: React.FC<MenuProps> = ({ slideAnim, onMenuSelect }) => {
         zIndex: 10, // Ensure it’s above other content
       }}
     >
+      <StatusBar backgroundColor="#782F40" barStyle="light-content" />
       <View style={{ width: "100%", height: 4, backgroundColor: "#cdcfd2" }} />
 
       <TouchableOpacity onPress={() => onMenuSelect("arriving")}>
@@ -37,6 +38,12 @@ const Menu: React.FC<MenuProps> = ({ slideAnim, onMenuSelect }) => {
 
       <TouchableOpacity onPress={() => onMenuSelect("departing")}>
         <Text style={menuStyles.title}>Departing</Text>
+      </TouchableOpacity>
+
+      <View style={menuStyles.dividerLine} />
+
+      <TouchableOpacity onPress={() => onMenuSelect("export")}>
+        <Text style={menuStyles.title}>Export</Text>
       </TouchableOpacity>
 
       <View style={menuStyles.dividerLine} />
