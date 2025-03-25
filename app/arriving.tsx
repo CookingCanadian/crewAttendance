@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, Image } from "react-native";
-import { database } from './firebase';
+import database from './firebase';
 import { ref, onValue } from 'firebase/database';
 
 interface personData {
@@ -45,10 +45,7 @@ const Arriving: React.FC = () => {
                   {details.bus ? 'Takes Bus' : 'Usually Drives'} |{' '}
                   {details.plannedAbsence ? 'Planned Absence' : ''} |{' '}                 
                 </Text>
-              </View>
-              
-              
-              
+              </View>              
             </View>
           ))
         ) : (
