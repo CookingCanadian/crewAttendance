@@ -1,9 +1,11 @@
 import { Text, TouchableOpacity, View, Animated, StatusBar } from "react-native";
 import { useNavigation } from "expo-router";
 import { useEffect, useRef, useState } from "react";
+
 import Menu from "./menu";
 import Arriving from "./arriving";
 import Export from "./export";
+import Departing from "./departing"
 
 export default function Index() {
   const navigation = useNavigation();
@@ -42,7 +44,7 @@ export default function Index() {
       case "boatLineups":
         return <Text>Boat Lineups Content</Text>;
       case "departing":
-        return <Text>Departing Content</Text>;
+        return <Departing/>
       case "export":
         return <Export />
       default:
