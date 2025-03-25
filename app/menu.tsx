@@ -1,0 +1,32 @@
+import React from "react";
+import { View, Text, Animated, StyleSheet, TouchableOpacity } from "react-native";
+
+interface MenuProps {
+  slideAnim: Animated.Value;
+}
+
+const Menu: React.FC<MenuProps> = ({ slideAnim }) => {
+  return (
+    <Animated.View style={{ position: "absolute", top: 0, left: slideAnim, width: 250, height: "100%", backgroundColor: "#f7f7f7", flexDirection: "column" }}>
+      <View style={{ width: "100%", height: 4, backgroundColor: "#cdcfd2" }} />
+        <TouchableOpacity>
+            <Text style={menuStyles.title}>Attendance</Text>
+        </TouchableOpacity>
+
+        <View style={menuStyles.dividerLine}/>
+
+        <TouchableOpacity>
+            <Text style={menuStyles.title}>Boat Lineups</Text>
+        </TouchableOpacity>
+
+        <View style={menuStyles.dividerLine}/>
+    </Animated.View>
+  );
+};
+
+const menuStyles = StyleSheet.create({
+  title: { fontSize: 16, fontFamily: "Verdana", fontWeight: "600", color: "#4e5052", margin: 10 },
+  dividerLine: { width: "100%", height: 1, backgroundColor: "#cdcfd2"}
+});
+
+export default Menu;
