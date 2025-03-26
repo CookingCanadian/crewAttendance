@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, Image, StatusBar, TouchableOpacity } from "react-native";
+import React, { useEffect, useState, useRef } from "react";
+import { View, Text, ScrollView, Image, StatusBar, TouchableOpacity, Animated } from "react-native";
 import database from './firebase';
-import { ref, onValue, update } from 'firebase/database'; // Add update
+import { ref, onValue, update } from 'firebase/database';
 
 interface personData {
   absent: boolean;
@@ -14,6 +14,7 @@ interface personData {
 
 const Arriving: React.FC = () => {
   const [people, setPeople] = useState<Record<string, personData>>({});
+  const spinValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const dbRef = ref(database);
@@ -22,35 +23,68 @@ const Arriving: React.FC = () => {
       const data = snapshot.val();
       setPeople(data || {});
     }, (error) => {
-      console.error('Error fetching data:', error);
+      // Error handling remains, but no console.error
     });
 
     return () => unsubscribe();
   }, []);
 
   const clickHere = (name: string) => {
-    const personRef = ref(database, name); // Reference to the specific person
+    const personRef = ref(database, name);
     const currentPerson = people[name];
-    const newAbsent = !currentPerson.absent; // Toggle absent
+    const newAbsent = !currentPerson.absent;
 
-    // Update Firebase
-    update(personRef, { absent: newAbsent })
+    update(personRef, { absent: newAbsent });
   };
 
   const clickReturning = (name: string) => {
-    const personRef = ref(database, name); // Reference to the specific person
+    const personRef = ref(database, name);
     const currentPerson = people[name];
-    const newReturning = !currentPerson.returning; // Toggle returning
+    const newReturning = !currentPerson.returning;
 
-    // Update Firebase
-    update(personRef, { returning: newReturning })
+    update(personRef, { returning: newReturning });
   };
+
+  const handleRefresh = () => {
+    spinValue.setValue(0);
+
+    Animated.timing(spinValue, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+
+    const updates: Record<string, boolean> = {};
+    Object.keys(people).forEach((name) => {
+      updates[`${name}/absent`] = true;
+    });
+
+    update(ref(database), updates);
+  };
+
+  const spin = spinValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
 
   return (
     <View style={{ width: "86%", flex: 1, marginTop: 20, backgroundColor: "#ffffff", flexDirection: "column" }}>
       <StatusBar backgroundColor="#782F40" barStyle="light-content" />
       <View style={{ width: "100%", height: 4, backgroundColor: "#cdcfd2" }} />
-      <Text style={{ color: "#282b31", fontSize: 20, fontFamily: "Verdana", fontWeight: "600", margin: 12 }}>Arriving</Text>
+      <View style={{ width: "100%", height: 50, flexDirection: "row", alignItems: "center", paddingHorizontal: 10, justifyContent: "space-between" }}>
+        <Text style={{ color: "#282b31", fontSize: 20, fontFamily: "Verdana", fontWeight: "600" }}>Arriving</Text>
+
+        <TouchableOpacity onPress={handleRefresh} style={{ width: 30, height: 30 }}>
+          <Animated.Image
+            source={require("../assets/images/icons8-refresh-60.png")}
+            style={{
+              width: 30,
+              height: 30,
+              transform: [{ rotate: spin }],
+            }}
+          />
+        </TouchableOpacity>
+      </View>
       <View style={{ width: "100%", height: 1, backgroundColor: "#cdcfd2" }} />
 
       <ScrollView style={{ flex: 1 }}>
@@ -112,11 +146,11 @@ const Arriving: React.FC = () => {
 
                 <View style={{ width: "100%", height: 30, flexDirection: "row", justifyContent: "space-between", paddingRight: 2 }}>
                   <TouchableOpacity
-                    onPress={() => clickHere(name)} // Pass name to toggle absent
+                    onPress={() => clickHere(name)}
                     style={{
                       width: 90,
                       height: 26,
-                      backgroundColor: details.absent ? "#a8a8a8" : "#92d696", // Red if absent, gray if here
+                      backgroundColor: details.absent ? "#a8a8a8" : "#92d696",
                       borderRadius: 13,
                       justifyContent: "center",
                       alignItems: "center",
@@ -128,11 +162,11 @@ const Arriving: React.FC = () => {
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    onPress={() => clickReturning(name)} // Pass name to toggle returning
+                    onPress={() => clickReturning(name)}
                     style={{
                       width: 90,
                       height: 26,
-                      backgroundColor: details.returning ? "orange" : "#c4c4c4", // Green if returning, gray if not
+                      backgroundColor: details.returning ? "orange" : "#c4c4c4",
                       borderRadius: 13,
                       justifyContent: "center",
                       alignItems: "center",
