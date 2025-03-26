@@ -97,7 +97,7 @@ const Arriving: React.FC = () => {
               <View style={{ width: "65%", height: 100, paddingTop: 10, justifyContent: "space-between" }}>
                 <Text style={{ fontSize: 16, fontFamily: "Verdana", fontWeight: "bold" }}>{name}</Text>
                 <View style={{ width: "100%", height: 30 }}>
-                  <View style={{ width: "100%", height: details.bus ? 0 : 15, flexDirection: "row", overflow: "hidden", alignItems: "center", justifyContent: details.plannedAbsence ? "space-between" : "flex-start" }}>
+                  <View style={{ width: "100%", height: details.bus ? 0 : 15, flexDirection: "row", overflow: "hidden", alignItems: "center", justifyContent: "flex-start" }}>
                     <View style={{ width: 12, height: 12, borderRadius: 7, backgroundColor: "#92d696", marginRight: 4 }} />
                     <Text style={{ fontFamily: "Verdana", fontSize: 12, fontWeight: "bold", color: "#828282" }}>Usually Drives</Text>
                   </View>
