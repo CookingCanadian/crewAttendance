@@ -1,7 +1,6 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useRef, useState } from "react";
 import { View, Text, ScrollView, Image, StatusBar, TouchableOpacity, Animated, Modal } from "react-native";
-import database from './firebase';
-import { ref, onValue, update } from 'firebase/database';
+import { useData } from './dataContext';
 
 interface personData {
   absent: boolean;
@@ -10,32 +9,18 @@ interface personData {
   profilePicture: string;
   sex: string;
   returning: boolean;
-  boarded?: boolean; // Optional boarded boolean
+  boarded?: boolean;
 }
 
 const Departing: React.FC = () => {
-  const [people, setPeople] = useState<Record<string, personData>>({});
+  const { people, updatePerson } = useData();
   const spinValue = useRef(new Animated.Value(0)).current;
   const [modalVisible, setModalVisible] = useState(false);
 
-  useEffect(() => {
-    const dbRef = ref(database);
-
-    const unsubscribe = onValue(dbRef, (snapshot) => {
-      const data = snapshot.val();
-      setPeople(data || {});
-    }, (error) => {
-      console.error('Error fetching data:', error);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
   const clickBoarded = (name: string) => {
-    const personRef = ref(database, name);
     const currentPerson = people[name];
-    const newBoarded = !currentPerson.boarded; // Toggle the boarded state
-    update(personRef, { boarded: newBoarded });
+    const newBoarded = !currentPerson.boarded;
+    updatePerson(name, { boarded: newBoarded });
   };
 
   const handleRefresh = () => {
@@ -45,11 +30,11 @@ const Departing: React.FC = () => {
   const confirmRefresh = () => {
     spinValue.setValue(0);
     Animated.timing(spinValue, { toValue: 1, duration: 500, useNativeDriver: true }).start();
-    const updates: Record<string, boolean> = {};
+    const updates: Record<string, { boarded: boolean }> = {};
     Object.keys(people).forEach((name) => {
-      updates[`${name}/boarded`] = false; // Reset all boarded to false
+      updates[name] = { boarded: false };
     });
-    update(ref(database), updates);
+    Object.entries(updates).forEach(([name, updateData]) => updatePerson(name, updateData));
     setModalVisible(false);
   };
 
@@ -103,62 +88,15 @@ const Departing: React.FC = () => {
           returningPeople.map(([name, details], index) => (
             <View
               key={index}
-              style={{
-                width: "90%",
-                height: 100,
-                marginBottom: 10,
-                alignSelf: "center",
-                backgroundColor: "#f9f9f9",
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
+              style={{ width: "90%", height: 100, marginBottom: 10, alignSelf: "center", backgroundColor: "#f9f9f9", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}
             >
               <Image source={{ uri: details.profilePicture }} style={{ width: 80, height: 80, borderRadius: 40, margin: 10 }} />
-
               <View style={{ width: "65%", height: 100, paddingTop: 10, justifyContent: "space-between" }}>
                 <Text style={{ fontSize: 16, fontFamily: "Verdana", fontWeight: "bold" }}>{name}</Text>
-
-                <View style={{ width: "100%", height: 30 }}>
-                  <View
-                    style={{
-                      width: "100%",
-                      height: details.bus ? 0 : 15,
-                      flexDirection: "row",
-                      overflow: "hidden",
-                      alignItems: "center",
-                      justifyContent: details.plannedAbsence ? "space-between" : "flex-start",
-                    }}
-                  >
-                    <View style={{ width: 12, height: 12, borderRadius: 7, backgroundColor: "#92d696", marginRight: 4 }} />
-                    <Text style={{ fontFamily: "Verdana", fontSize: 12, fontWeight: "bold", color: "#828282" }}>Usually Drives</Text>
-                  </View>
-
-                  <View
-                    style={{
-                      width: "100%",
-                      height: details.plannedAbsence ? 15 : 0,
-                      flexDirection: "row",
-                      overflow: "hidden",
-                      alignItems: "center",
-                    }}
-                  >
-                    <View style={{ width: 12, height: 12, borderRadius: 7, backgroundColor: "orange", marginRight: 4 }} />
-                    <Text style={{ fontFamily: "Verdana", fontSize: 12, fontWeight: "bold", color: "#828282" }}>Planned Absence</Text>
-                  </View>
-                </View>
-
                 <View style={{ width: "100%", height: 30, flexDirection: "row", justifyContent: "flex-end", paddingRight: 2 }}>
                   <TouchableOpacity
                     onPress={() => clickBoarded(name)}
-                    style={{
-                      width: 90,
-                      height: 26,
-                      backgroundColor: details.boarded ? "#92d696" : "#c4c4c4",
-                      borderRadius: 13,
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
+                    style={{ width: 90, height: 26, backgroundColor: details.boarded ? "#92d696" : "#c4c4c4", borderRadius: 13, justifyContent: "center", alignItems: "center" }}
                   >
                     <Text style={{ fontFamily: "Verdana", fontSize: 14, fontWeight: "bold", color: "white" }}>
                       {details.boarded ? "Boarded" : "Missing"}

@@ -1,7 +1,6 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useRef, useState } from "react";
 import { View, Text, ScrollView, Image, StatusBar, TouchableOpacity, Animated, Modal } from "react-native";
-import database from './firebase';
-import { ref, onValue, update } from 'firebase/database';
+import { useData } from './dataContext';
 
 interface personData {
   absent: boolean;
@@ -13,31 +12,20 @@ interface personData {
 }
 
 const Arriving: React.FC = () => {
-  const [people, setPeople] = useState<Record<string, personData>>({});
+  const { people, updatePerson } = useData();
   const spinValue = useRef(new Animated.Value(0)).current;
   const [modalVisible, setModalVisible] = useState(false);
 
-  useEffect(() => {
-    const dbRef = ref(database);
-    const unsubscribe = onValue(dbRef, (snapshot) => {
-      const data = snapshot.val();
-      setPeople(data || {});
-    }, (error) => {});
-    return () => unsubscribe();
-  }, []);
-
   const clickHere = (name: string) => {
-    const personRef = ref(database, name);
     const currentPerson = people[name];
     const newAbsent = !currentPerson.absent;
-    update(personRef, { absent: newAbsent });
+    updatePerson(name, { absent: newAbsent });
   };
 
   const clickReturning = (name: string) => {
-    const personRef = ref(database, name);
     const currentPerson = people[name];
     const newReturning = !currentPerson.returning;
-    update(personRef, { returning: newReturning });
+    updatePerson(name, { returning: newReturning });
   };
 
   const handleRefresh = () => {
@@ -47,9 +35,11 @@ const Arriving: React.FC = () => {
   const confirmRefresh = () => {
     spinValue.setValue(0);
     Animated.timing(spinValue, { toValue: 1, duration: 500, useNativeDriver: true }).start();
-    const updates: Record<string, boolean> = {};
-    Object.keys(people).forEach((name) => { updates[`${name}/absent`] = true; });
-    update(ref(database), updates);
+    const updates: Record<string, { absent: boolean }> = {};
+    Object.keys(people).forEach((name) => {
+      updates[name] = { absent: true };
+    });
+    Object.entries(updates).forEach(([name, updateData]) => updatePerson(name, updateData));
     setModalVisible(false);
   };
 
@@ -72,21 +62,21 @@ const Arriving: React.FC = () => {
       <View style={{ width: "100%", height: 1, backgroundColor: "#cdcfd2" }} />
 
       <Modal animationType="fade" transparent={true} visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
-          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-            <View style={{ width: 300, height: 4, backgroundColor: "#cdcfd2" }} />
-            <View style={{ width: 300, padding: 20, backgroundColor: "#ffffff", alignItems: "center", elevation: 5 }}>
-              <Text style={{ fontFamily: "Verdana", fontSize: 18, fontWeight: "600", color: "#282b31", marginBottom: 15 }}>( ͠° ͟ʖ ͡°)</Text>
-              <Text style={{ fontFamily: "Verdana", fontSize: 14, color: "#828282", textAlign: "center", marginBottom: 20 }}>Are you sure you want to reset attendance? This will mark all people as absent.</Text>
-              <View style={{ flexDirection: "row", justifyContent: "space-between", width: "100%" }}>
-                <TouchableOpacity onPress={cancelRefresh} style={{ width: 120, padding: 10, backgroundColor: "#c4c4c4", borderRadius: 8, alignItems: "center" }}>
-                  <Text style={{ fontFamily: "Verdana", fontSize: 14, fontWeight: "bold", color: "#ffffff" }}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={confirmRefresh} style={{ width: 120, padding: 10, backgroundColor: "#782F40", borderRadius: 8, alignItems: "center" }}>
-                  <Text style={{ fontFamily: "Verdana", fontSize: 14, fontWeight: "bold", color: "#ffffff" }}>Yes</Text>
-                </TouchableOpacity>
-              </View>
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <View style={{ width: 300, height: 4, backgroundColor: "#cdcfd2" }} />
+          <View style={{ width: 300, padding: 20, backgroundColor: "#ffffff", alignItems: "center", elevation: 5 }}>
+            <Text style={{ fontFamily: "Verdana", fontSize: 18, fontWeight: "600", color: "#282b31", marginBottom: 15 }}>( ͠° ͟ʖ ͡°)</Text>
+            <Text style={{ fontFamily: "Verdana", fontSize: 14, color: "#828282", textAlign: "center", marginBottom: 20 }}>Are you sure you want to reset attendance? This will mark all people as absent.</Text>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", width: "100%" }}>
+              <TouchableOpacity onPress={cancelRefresh} style={{ width: 120, padding: 10, backgroundColor: "#c4c4c4", borderRadius: 8, alignItems: "center" }}>
+                <Text style={{ fontFamily: "Verdana", fontSize: 14, fontWeight: "bold", color: "#ffffff" }}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={confirmRefresh} style={{ width: 120, padding: 10, backgroundColor: "#782F40", borderRadius: 8, alignItems: "center" }}>
+                <Text style={{ fontFamily: "Verdana", fontSize: 14, fontWeight: "bold", color: "#ffffff" }}>Yes</Text>
+              </TouchableOpacity>
             </View>
-          </View>   
+          </View>
+        </View>   
       </Modal>
 
       <ScrollView style={{ flex: 1 }}>

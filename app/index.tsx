@@ -1,11 +1,12 @@
 import { Text, TouchableOpacity, View, Animated, StatusBar } from "react-native";
 import { useNavigation } from "expo-router";
 import { useEffect, useRef, useState } from "react";
+import DataProvider from "./dataContext"; 
 
 import Menu from "./menu";
 import Arriving from "./arriving";
 import Export from "./export";
-import Departing from "./departing"
+import Departing from "./departing";
 
 export default function Index() {
   const navigation = useNavigation();
@@ -42,68 +43,70 @@ export default function Index() {
       case "arriving":
         return <Arriving />;
       case "boatLineups":
-        return <Text>Boat Lineups Content</Text>;
+        return <Text>idk what to put here</Text>;
       case "departing":
-        return <Departing/>
+        return <Departing />;
       case "export":
-        return <Export />
+        return <Export />;
       default:
         return <Text>Select an option from the menu.</Text>;
     }
   };
 
   return (
-    <View style={{ flex: 1 }}>
-      <StatusBar backgroundColor="#782F40" barStyle="light-content" />
-      <View
-        style={{
-          width: "100%",
-          height: 60,
-          backgroundColor: "#782F40",
-          flexDirection: "row",
-          alignItems: "center",
-        }}
-      >
-        <TouchableOpacity
+    <DataProvider>
+      <View style={{ flex: 1 }}>
+        <StatusBar backgroundColor="#782F40" barStyle="light-content" />
+        <View
           style={{
-            width: 32,
-            height: 24,
+            width: "100%",
+            height: 60,
+            backgroundColor: "#782F40",
+            flexDirection: "row",
             alignItems: "center",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            marginLeft: 10,
-          }}
-          onPress={menuPress}
-        >
-          <View style={{ width: "100%", height: 4, backgroundColor: "white" }} />
-          <View style={{ width: "100%", height: 4, backgroundColor: "white" }} />
-          <View style={{ width: "100%", height: 4, backgroundColor: "white" }} />
-        </TouchableOpacity>
-        <Text
-          style={{
-            color: "white",
-            fontSize: 24,
-            fontFamily: "Verdana",
-            fontWeight: "600",
-            marginLeft: 10,
           }}
         >
-          Hopkins Crew
-        </Text>
-      </View>
+          <TouchableOpacity
+            style={{
+              width: 32,
+              height: 24,
+              alignItems: "center",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              marginLeft: 10,
+            }}
+            onPress={menuPress}
+          >
+            <View style={{ width: "100%", height: 4, backgroundColor: "white" }} />
+            <View style={{ width: "100%", height: 4, backgroundColor: "white" }} />
+            <View style={{ width: "100%", height: 4, backgroundColor: "white" }} />
+          </TouchableOpacity>
+          <Text
+            style={{
+              color: "white",
+              fontSize: 24,
+              fontFamily: "Verdana",
+              fontWeight: "600",
+              marginLeft: 10,
+            }}
+          >
+            Hopkins Crew
+          </Text>
+        </View>
 
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: "#eeeeef",
-          justifyContent: "center",
-          alignItems: "center",
-          position: "relative", 
-        }}
-      >
-        {renderContent()}
-        <Menu slideAnim={menuSlide} onMenuSelect={handleMenuSelect} />
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "#eeeeef",
+            justifyContent: "center",
+            alignItems: "center",
+            position: "relative",
+          }}
+        >
+          {renderContent()}
+          <Menu slideAnim={menuSlide} onMenuSelect={handleMenuSelect} />
+        </View>
       </View>
-    </View>
+    </DataProvider>
   );
 }
