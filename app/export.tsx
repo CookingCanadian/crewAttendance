@@ -1,9 +1,8 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useRef, useState } from "react";
 import { View, Text, ScrollView, Image, StatusBar, TouchableOpacity } from "react-native";
 import { captureRef } from "react-native-view-shot";
 import * as Sharing from "expo-sharing";
-import database from './firebase';
-import { ref, onValue } from 'firebase/database';
+import { useData } from './dataContext';
 
 interface personData {
   absent: boolean;
@@ -15,33 +14,19 @@ interface personData {
 }
 
 const Export: React.FC = () => {
-  const [people, setPeople] = useState<Record<string, personData>>({});
+  const { people } = useData();
   const exportRef = useRef<View>(null);
   const [isReady, setIsReady] = useState(false);
-
-  useEffect(() => {
-    const dbRef = ref(database);
-    const unsubscribe = onValue(dbRef, (snapshot) => {
-      const data = snapshot.val();
-      setPeople(data || {});
-    }, (error) => {
-      console.error('Error fetching data:', error);
-    });
-    return () => unsubscribe();
-  }, []);
 
   const presentPeople = Object.entries(people).filter(([_, details]) => !details.absent);
   const males = presentPeople.filter(([_, details]) => details.sex === "male");
   const females = presentPeople.filter(([_, details]) => details.sex === "female");
 
-  // Split into two columns per gender
-  const maxItemsPerColumn = 22; // 900px / 40px ≈ 22
   const maleCol1 = males.slice(0, Math.ceil(males.length / 2));
   const maleCol2 = males.slice(Math.ceil(males.length / 2));
   const femaleCol1 = females.slice(0, Math.ceil(females.length / 2));
   const femaleCol2 = females.slice(Math.ceil(females.length / 2));
 
-  // Determine active columns and max length
   const activeColumns = [
     maleCol1.length > 0,
     maleCol2.length > 0,
@@ -49,8 +34,8 @@ const Export: React.FC = () => {
     femaleCol2.length > 0,
   ].filter(Boolean).length;
   const maxLength = Math.max(maleCol1.length, maleCol2.length, femaleCol1.length, femaleCol2.length);
-  const exportWidth = activeColumns * 200; // 200px per column
-  const exportHeight = Math.min(1000, 100 + maxLength * 40); // Cap at 1000px
+  const exportWidth = activeColumns * 200;
+  const exportHeight = Math.min(1000, 100 + maxLength * 40);
 
   const exportAttendance = async () => {
     if (!exportRef.current || presentPeople.length === 0 || !isReady) {
@@ -59,12 +44,7 @@ const Export: React.FC = () => {
     }
 
     try {
-      // Preload all images
-      await Promise.all(presentPeople.map(([_, details]) => 
-        Image.prefetch(details.profilePicture)
-      ));
-
-      // Add delay for rendering
+      await Promise.all(presentPeople.map(([_, details]) => Image.prefetch(details.profilePicture)));
       await new Promise(resolve => setTimeout(resolve, 3000));
       const uri = await captureRef(exportRef, {
         format: "png",
@@ -104,188 +84,87 @@ const Export: React.FC = () => {
       </View>
       <View style={{ width: "100%", height: 1, backgroundColor: "#cdcfd2" }} />
 
-      {/* Hidden Export View */}
       <View style={{ position: "absolute", opacity: 0, top: -1000, left: 0 }}>
         <View
           ref={exportRef}
           onLayout={() => setIsReady(true)}
-          style={{
-            width: exportWidth,
-            height: exportHeight,
-            backgroundColor: "#ffffff",
-          }}
+          style={{ width: exportWidth, height: exportHeight, backgroundColor: "#ffffff" }}
           collapsable={false}
         >
           <View style={{ width: "100%", height: 4, backgroundColor: "#cdcfd2" }} />
-          <Text style={{ 
-            color: "#282b31", 
-            fontSize: 20, 
-            fontFamily: "Verdana", 
-            fontWeight: "bold", 
-            marginTop: 10, 
-            marginLeft: 10, 
-            marginBottom: 10 
-          }}>
+          <Text style={{ color: "#282b31", fontSize: 20, fontFamily: "Verdana", fontWeight: "bold", marginTop: 10, marginLeft: 10, marginBottom: 10 }}>
             Bus Arrival [{presentPeople.length}]
           </Text>
           <View style={{ width: "100%", height: 1, backgroundColor: "#cdcfd2", marginBottom: 10 }} />
           <View style={{ flexDirection: "row" }}>
-            {/* Male Column 1 */}
             {maleCol1.length > 0 && (
               <View style={{ width: 200, backgroundColor: "#ffffff", marginHorizontal: 5 }}>
-                <Text style={{ 
-                  color: "#282b31", 
-                  fontSize: 14, 
-                  fontFamily: "Verdana", 
-                  fontWeight: "600", 
-                  marginBottom: 5, 
-                  marginLeft: 5 
-                }}>
-                  Male [{males.length}] {/* Total male count */}
+                <Text style={{ color: "#282b31", fontSize: 14, fontFamily: "Verdana", fontWeight: "600", marginBottom: 5, marginLeft: 5 }}>
+                  Male [{males.length}]
                 </Text>
                 {maleCol1.map(([name, details], index) => (
                   <View
                     key={index}
-                    style={{
-                      width: "100%",
-                      height: 30,
-                      marginBottom: 10,
-                      marginHorizontal: 5,
-                      backgroundColor: "#f9f9f9",
-                      flexDirection: "row",
-                      alignItems: "center",
-                    }}
+                    style={{ width: "100%", height: 30, marginBottom: 10, marginHorizontal: 5, backgroundColor: "#f9f9f9", flexDirection: "row", alignItems: "center" }}
                   >
                     <View style={{ width: 4, height: "100%", backgroundColor: "#cdcfd2" }} />
-                    <Image 
-                      source={{ uri: details.profilePicture }} 
-                      style={{ width: 24, height: 24, borderRadius: 12, margin: 3 }} 
-                      resizeMode="cover"
-                    />
-                    <Text style={{ fontSize: 12, fontFamily: "Verdana", fontWeight: "bold", marginLeft: 5 }}>
-                      {name}
-                    </Text>
+                    <Image source={{ uri: details.profilePicture }} style={{ width: 24, height: 24, borderRadius: 12, margin: 3 }} resizeMode="cover" />
+                    <Text style={{ fontSize: 12, fontFamily: "Verdana", fontWeight: "bold", marginLeft: 5 }}>{name}</Text>
                   </View>
                 ))}
               </View>
             )}
-            {/* Male Column 2 */}
             {maleCol2.length > 0 && (
               <View style={{ width: 200, backgroundColor: "#ffffff", marginHorizontal: 5 }}>
-                {maleCol1.length === 0 && ( // Only show header if Male Col 1 is empty
-                  <Text style={{ 
-                    color: "#282b31", 
-                    fontSize: 14, 
-                    fontFamily: "Verdana", 
-                    fontWeight: "600", 
-                    marginBottom: 5, 
-                    marginLeft: 5 
-                  }}>
-                    Male [{males.length}] {/* Total male count */}
+                {maleCol1.length === 0 && (
+                  <Text style={{ color: "#282b31", fontSize: 14, fontFamily: "Verdana", fontWeight: "600", marginBottom: 5, marginLeft: 5 }}>
+                    Male [{males.length}]
                   </Text>
                 )}
                 {maleCol2.map(([name, details], index) => (
                   <View
                     key={index}
-                    style={{
-                      width: "100%",
-                      height: 30,
-                      marginBottom: 10,
-                      marginHorizontal: 5,
-                      backgroundColor: "#f9f9f9",
-                      flexDirection: "row",
-                      alignItems: "center",
-                    }}
+                    style={{ width: "100%", height: 30, marginBottom: 10, marginHorizontal: 5, backgroundColor: "#f9f9f9", flexDirection: "row", alignItems: "center" }}
                   >
                     <View style={{ width: 4, height: "100%", backgroundColor: "#cdcfd2" }} />
-                    <Image 
-                      source={{ uri: details.profilePicture }} 
-                      style={{ width: 24, height: 24, borderRadius: 12, margin: 3 }} 
-                      resizeMode="cover"
-                    />
-                    <Text style={{ fontSize: 12, fontFamily: "Verdana", fontWeight: "bold", marginLeft: 5 }}>
-                      {name}
-                    </Text>
+                    <Image source={{ uri: details.profilePicture }} style={{ width: 24, height: 24, borderRadius: 12, margin: 3 }} resizeMode="cover" />
+                    <Text style={{ fontSize: 12, fontFamily: "Verdana", fontWeight: "bold", marginLeft: 5 }}>{name}</Text>
                   </View>
                 ))}
               </View>
             )}
-            {/* Female Column 1 */}
             {femaleCol1.length > 0 && (
               <View style={{ width: 200, backgroundColor: "#ffffff", marginHorizontal: 5 }}>
-                <Text style={{ 
-                  color: "#282b31", 
-                  fontSize: 14, 
-                  fontFamily: "Verdana", 
-                  fontWeight: "600", 
-                  marginBottom: 5, 
-                  marginLeft: 5 
-                }}>
-                  Female [{females.length}] {/* Total female count */}
+                <Text style={{ color: "#282b31", fontSize: 14, fontFamily: "Verdana", fontWeight: "600", marginBottom: 5, marginLeft: 5 }}>
+                  Female [{females.length}]
                 </Text>
                 {femaleCol1.map(([name, details], index) => (
                   <View
                     key={index}
-                    style={{
-                      width: "100%",
-                      height: 30,
-                      marginBottom: 10,
-                      marginHorizontal: 5,
-                      backgroundColor: "#f9f9f9",
-                      flexDirection: "row",
-                      alignItems: "center",
-                    }}
+                    style={{ width: "100%", height: 30, marginBottom: 10, marginHorizontal: 5, backgroundColor: "#f9f9f9", flexDirection: "row", alignItems: "center" }}
                   >
                     <View style={{ width: 4, height: "100%", backgroundColor: "#cdcfd2" }} />
-                    <Image 
-                      source={{ uri: details.profilePicture }} 
-                      style={{ width: 24, height: 24, borderRadius: 12, margin: 3 }} 
-                      resizeMode="cover"
-                    />
-                    <Text style={{ fontSize: 12, fontFamily: "Verdana", fontWeight: "bold", marginLeft: 5 }}>
-                      {name}
-                    </Text>
+                    <Image source={{ uri: details.profilePicture }} style={{ width: 24, height: 24, borderRadius: 12, margin: 3 }} resizeMode="cover" />
+                    <Text style={{ fontSize: 12, fontFamily: "Verdana", fontWeight: "bold", marginLeft: 5 }}>{name}</Text>
                   </View>
                 ))}
               </View>
             )}
-            {/* Female Column 2 */}
             {femaleCol2.length > 0 && (
               <View style={{ width: 200, backgroundColor: "#ffffff", marginHorizontal: 5 }}>
-                {femaleCol1.length === 0 && ( // Only show header if Female Col 1 is empty
-                  <Text style={{ 
-                    color: "#282b31", 
-                    fontSize: 14, 
-                    fontFamily: "Verdana", 
-                    fontWeight: "600", 
-                    marginBottom: 5, 
-                    marginLeft: 5 
-                  }}>
-                    Female [{females.length}] {/* Total female count */}
+                {femaleCol1.length === 0 && (
+                  <Text style={{ color: "#282b31", fontSize: 14, fontFamily: "Verdana", fontWeight: "600", marginBottom: 5, marginLeft: 5 }}>
+                    Female [{females.length}]
                   </Text>
                 )}
                 {femaleCol2.map(([name, details], index) => (
                   <View
                     key={index}
-                    style={{
-                      width: "100%",
-                      height: 30,
-                      marginBottom: 10,
-                      marginHorizontal: 5,
-                      backgroundColor: "#f9f9f9",
-                      flexDirection: "row",
-                      alignItems: "center",
-                    }}
+                    style={{ width: "100%", height: 30, marginBottom: 10, marginHorizontal: 5, backgroundColor: "#f9f9f9", flexDirection: "row", alignItems: "center" }}
                   >
                     <View style={{ width: 4, height: "100%", backgroundColor: "#cdcfd2" }} />
-                    <Image 
-                      source={{ uri: details.profilePicture }} 
-                      style={{ width: 24, height: 24, borderRadius: 12, margin: 3 }} 
-                      resizeMode="cover"
-                    />
-                    <Text style={{ fontSize: 12, fontFamily: "Verdana", fontWeight: "bold", marginLeft: 5 }}>
-                      {name}
-                    </Text>
+                    <Image source={{ uri: details.profilePicture }} style={{ width: 24, height: 24, borderRadius: 12, margin: 3 }} resizeMode="cover" />
+                    <Text style={{ fontSize: 12, fontFamily: "Verdana", fontWeight: "bold", marginLeft: 5 }}>{name}</Text>
                   </View>
                 ))}
               </View>
@@ -294,38 +173,21 @@ const Export: React.FC = () => {
         </View>
       </View>
 
-      {/* Visible ScrollView */}
       <ScrollView style={{ flex: 1 }}>
         {presentPeople.length > 0 ? (
           presentPeople.map(([name, details], index) => (
             <View
               key={index}
-              style={{
-                width: "90%",
-                height: 40,
-                marginBottom: 10,
-                alignSelf: "center",
-                backgroundColor: "#f9f9f9",
-                flexDirection: "row",
-                alignItems: "center",
-              }}
+              style={{ width: "90%", height: 40, marginBottom: 10, alignSelf: "center", backgroundColor: "#f9f9f9", flexDirection: "row", alignItems: "center" }}
             >
               <View style={{ width: 4, height: "100%", backgroundColor: "#cdcfd2" }} />
-              <Image 
-                source={{ uri: details.profilePicture }} 
-                style={{ width: 34, height: 34, borderRadius: 17, margin: 3 }} 
-                resizeMode="cover"
-              />
-              <Text style={{ fontSize: 16, fontFamily: "Verdana", fontWeight: "bold", marginLeft: 10 }}>
-                {name}
-              </Text>
+              <Image source={{ uri: details.profilePicture }} style={{ width: 34, height: 34, borderRadius: 17, margin: 3 }} resizeMode="cover" />
+              <Text style={{ fontSize: 16, fontFamily: "Verdana", fontWeight: "bold", marginLeft: 10 }}>{name}</Text>
             </View>
           ))
         ) : (
           <View style={{ flex: 1 }}>
-            <Text style={{ alignSelf: "center", fontFamily: "Verdana", fontWeight: "600", fontSize: 14, marginTop: 20 }}>
-              No one is present
-            </Text>
+            <Text style={{ alignSelf: "center", fontFamily: "Verdana", fontWeight: "600", fontSize: 14, marginTop: 20 }}>No one is present</Text>
           </View>
         )}
       </ScrollView>
