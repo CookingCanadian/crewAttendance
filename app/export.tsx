@@ -27,6 +27,8 @@ const Export: React.FC = () => {
   const femaleCol1 = females.slice(0, Math.ceil(females.length / 2));
   const femaleCol2 = females.slice(Math.ceil(females.length / 2));
 
+  const currentDate = new Date();
+  
   const activeColumns = [
     maleCol1.length > 0,
     maleCol2.length > 0,
@@ -35,7 +37,7 @@ const Export: React.FC = () => {
   ].filter(Boolean).length;
   const maxLength = Math.max(maleCol1.length, maleCol2.length, femaleCol1.length, femaleCol2.length);
   const exportWidth = activeColumns * 200;
-  const exportHeight = Math.min(1000, 100 + maxLength * 40);
+  const exportHeight = Math.min(1000, 110 + maxLength * 40);
 
   const exportAttendance = async () => {
     if (!exportRef.current || presentPeople.length === 0 || !isReady) {
@@ -92,9 +94,14 @@ const Export: React.FC = () => {
           collapsable={false}
         >
           <View style={{ width: "100%", height: 4, backgroundColor: "#cdcfd2" }} />
-          <Text style={{ color: "#282b31", fontSize: 20, fontFamily: "Verdana", fontWeight: "bold", marginTop: 10, marginLeft: 10, marginBottom: 10 }}>
+          <Text style={{ color: "#282b31", fontSize: 20, fontFamily: "Verdana", fontWeight: "bold", marginTop: 10, marginLeft: 10, marginBottom: 0 }}>
             Bus Arrival [{presentPeople.length}]
           </Text>
+
+          <Text style={{ color: "#282b31", fontSize: 14, fontFamily: "Verdana", fontWeight: "light", marginLeft: 10, marginBottom: 10 }}>
+            updated {currentDate.toLocaleString()}
+          </Text>
+
           <View style={{ width: "100%", height: 1, backgroundColor: "#cdcfd2", marginBottom: 10 }} />
           <View style={{ flexDirection: "row" }}>
             {maleCol1.length > 0 && (
