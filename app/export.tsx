@@ -22,7 +22,12 @@ const Export: React.FC = () => {
   const males = presentPeople.filter(([_, details]) => details.sex === "male");
   const females = presentPeople.filter(([_, details]) => details.sex === "female");
 
-  const maleCol1 = males.slice(0, Math.ceil(males.length / 2));
+  if (males.length > 16) {
+    //split into two cols
+  } else {
+    //singel col is good
+  }
+  const maleCol1 = males.slice(0, Math.ceil(males.length / 2)); 
   const maleCol2 = males.slice(Math.ceil(males.length / 2));
   const femaleCol1 = females.slice(0, Math.ceil(females.length / 2));
   const femaleCol2 = females.slice(Math.ceil(females.length / 2));
