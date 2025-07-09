@@ -19,13 +19,15 @@ npm run ios
 We'll be using EAS (https://docs.expo.dev/build/introduction/) to turn this code into something that can run on your phone
 ```bash
 npm install -g eas-cli
-
+```
+```bash
 eas login
 ```
 and depending on your phone...
 ```bash
 eas build -p android
-
+```
+```bash
 eas build -p ios
 ```
 
