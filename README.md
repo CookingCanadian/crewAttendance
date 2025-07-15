@@ -1,10 +1,15 @@
 # *some installations are required to compile
-(https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) \n
+(https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) 
 Installing node.js and npm gets us most of the way there
-*there may be some nuances related to Apple devices that might require something like homebrew to get those things installed\n
-*visual studio, and android studio aren't really required for this; visual studio code (the lighter version of visual studio) can get the job done\n
+
+*there may be some nuances related to Apple devices that might require something like homebrew to get those things installed
+
+*visual studio, and android studio aren't really required for this; visual studio code (the lighter version of visual studio) can get the job done
+
 *the export feature might not work on Apple devices, lmk if another through app approach would be more convenient\n
 (this could be another fun coding adventure for a current crew member)
+
+*python helper files are under the pythonHelper folder
 
 ## 1. Install dependancies
 ```bash
